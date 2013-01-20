@@ -1,0 +1,41 @@
+[
+	{"to": "_list/universities/choose_university", 
+	 "from": "choose_university", 
+	 "method": "GET", 
+	 "query": {"startkey": [":curriculum"], "endkey": [":curriculum", {}], 
+	 "group": "true"}
+	},
+	{"to": "vendor/*", 
+	 "from": "vendor/*",
+	 "method": "GET",
+	 "query": {}
+	},
+	{"to": "debug/*", 
+	 "from": "debug/*",
+	 "method": "GET",
+	 "query": {}
+	},
+	{"to": ":",
+	 "from": ":",
+	 "method": "GET",
+	 "query": {}
+	},
+	{"to": "_list/courses/choose_course", 
+	 "from": "universities/:university", 
+	 "method": "GET", 
+	 "query": {"startkey": [":university"], "endkey": [":university", {}], 
+	 "group": "true"}
+	}, 
+    {"to": "_list/choise", 
+	"from": "choix"
+	}, 
+	{"to": ":",
+     "from": ":",
+     "method": "POST",
+     "query": {}
+	}
+]
+
+
+
+
