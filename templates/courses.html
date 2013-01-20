@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css">
+    <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+</head>
+<body>
+	<center>
+		<h1>Gestionnaire de contrat d'étude à l'étranger</h1>
+		<h2>Choix de vos UV dans l'université : {{university}}</h2>
+	</center>
+	</br>
+	<div style="margin-left:300px; width: 700px; font-size: 10px;">
+		<div id="accordion">
+			{{#courses}}
+				<h3>{{name}}</h3>
+				<div>
+					<p>
+						Code du l'uv : {{code}} </br>
+						Equivalence : {{equivalence}} </br>
+						Choisir l'UV: <input type="checkbox" name="choixUV" value="form_{{code}}"> </br>
+						
+						<button onclick="valider_modification_cours()">Valider les modifications du cours</button>
+						<div id="intitule_cours">
+							Intitulé :    <textarea rows="1" cols="70">{{name}}</textarea>
+						</div>
+
+						<div id="descriptif_cours">
+							Description : <textarea rows="10" cols="70">{{description}}</textarea>
+						</div>
+						
+						<form name="form_{{code}}">
+						<input type="hidden" name="infos_code" value="{{code}}">
+						<input type="hidden" name="infos_equiv" value="{{equivalence}}">
+						<input type="hidden" name="infos_name" value="{{name}}">
+						<input type="hidden" name="infos_desc" value="{{description}}">
+						</form>
+						
+					</p>
+				</div>
+			{{/courses}}
+			<h3>Autres</h3>
+			<div>
+				<p>
+				<div>
+						Code du l'uv : <input type="text" id="code"> </br>
+						Equivalence : <input type="text" id="equivalence"> </br>
+						<div id="intitule_cours">
+							Intitulé :      <textarea id="intitule" rows="1" cols="50"></textarea>
+						</div>
+						<div id="descriptif_cours">
+							Description :   <textarea id="description" rows="10" cols="50"></textarea>
+						</div>
+						<button onclick="valider_ajout_cours()">Ajouter cours</button>	
+				</div>
+				</p>
+			</div>
+		</div>
+	</div>
+	
+	</br>
+	<button type="button" onclick="push_agreement()">Créer une convention d'étude</button>
+	
+	<script>
+		$(function() {
+			$( "#accordion" ).accordion();
+		});
+    </script>
+</body>
+</html>
+
+<script type="text/javascript">
+
+function valider_ajout_cours()
+{
+	var code = document.getElementById('code').value;
+	var equivalence = document.getElementById('equivalence').value;
+	var name = document.getElementById('intitule').value;
+	var description = document.getElementById('description').value;
+	
+	var active_val = $('#accordion').accordion('option', 'active');
+	
+	$('#accordion').prepend('<h3>' + name + '</h3> <div> <p> Code du l\'uv :' + code
+				+ '</br> Equivalence : ' + equivalence + '</br> Choisir l\'UV: <input type="checkbox" name="choixUV" value="form_'
+				+ code +'"> </br> <button onclick="valider_modification_cours()">Valider les modifications du cours</button> \
+				<div id="intitule_cours"> Intitulé :    <textarea rows="1" cols="70">' + name
+				+ '</textarea> </div> <div id="descriptif_cours">Description : <textarea rows="10" cols="70">' 
+				+ description + '</textarea> </div><form name="form_' + code + '"><input type="hidden" name="infos_code" value="' 
+				+ code + '"><input type="hidden" name="infos_equiv" value="' 
+				+ equivalence + '"><input type="hidden" name="infos_name" value="' 
+				+ name + '"><input type="hidden" name="infos_desc" value="'
+				+ description + '"></form> </p> </div>'
+				).accordion('destroy').accordion({ active: active_val});
+}	
+	
+
+var COUCH_DATABASE_URL = "http://localhost:5984/students_mobility/";
+
+function create_agreement( courses, host_institution, host_country){
+	var agreement = {};
+	
+	var academic_year = prompt("Ecrire l'année dans laquelle vous partez : ","2013");
+	var study_field = prompt("Ecrire la filière choisie : (exemple: ISI/SM/SRT/...)","ISI");
+	var semester = prompt("Ecrire le semestre dans lequel vous partez : (printemps ou automne)","Automne");
+	var student_surname = prompt("Ecrire votre nom de famille : ","");
+	var student_firstname = prompt("Ecrire votre prénom : ","");
+
+	agreement["academic_year"] = academic_year;
+	agreement["study_field"] = study_field;
+	agreement["semester"] = semester;
+	agreement["student_surname"] = student_surname;
+	agreement["student_firstname"] = student_firstname;
+	agreement["courses"] = courses;
+	agreement["host_institution"] = host_institution;
+	agreement["host_country"] = host_country;
+	
+	return agreement;
+}
+
+function push_agreement() {
+
+	alert("creating !");
+
+	var host_institution = "{{university}}";
+	var host_country = "unknown";
+	var courses = [];
+	$(":checked").each(function() {
+		var form_name = $(this).val();
+		alert("got form name : "+ form_name);
+		var infos_collection = document.getElementsByName(form_name)[0].elements;
+
+		courses.push({
+			id: infos_collection.namedItem("infos_code").value,
+			name: infos_collection.namedItem("infos_name").value,
+			equivalence: infos_collection.namedItem("infos_equiv").value,
+			description: infos_collection.namedItem("infos_desc").value,
+		});
+	});
+	
+	var data = create_agreement( courses, host_institution, host_country);
+	
+	alert(JSON.stringify(data));
+	
+	$.ajax({
+	type:"POST",
+	url:COUCH_DATABASE_URL,
+//	url:"..",
+//	type:"GET",
+//	url:"../index.html",
+	contentType: "application/json",
+	dataType: "json",
+	data: JSON.stringify(data),
+	success: function(data){
+		alert(data.id + " crée !");
+//		alert("ok success !");
+		}
+	});
+	
+}
+</script>
+
