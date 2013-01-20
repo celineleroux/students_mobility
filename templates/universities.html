@@ -1,0 +1,52 @@
+<html>
+  <body>
+		<center>
+			<h1>Gestionnaire de contrat d'étude à l'étranger</h1>
+			<img src="http://maps.google.com/maps/api/staticmap?center=33,0&zoom=1&size=480x300&sensor=false
+				{{#universities}}
+					&markers=label:{{order}}|{{name}}/>
+				{{/universities}}"
+			>
+			<p>La carte montre les différents lieux où se trouve la liste des universités ci-dessous.</p>
+						<h2>Choix de votre université d'accueil :</h2>
+			<div style="margin-left: 400px; text-align: left;">
+				<p>Universités (nombre d'UV validées en {{curriculum}}) :</p>
+				<ol>
+					{{#universities}}
+					  <li><a href="universities/{{name}}">{{name}}</a> ({{count}})</li>
+					{{/universities}}
+					<li><a href="#input_zone" onclick="show_input_zone()">Autres</a></li>
+					<div id="input_zone"></div>
+				</ol>
+			</div>
+		</center>
+	</body>
+</html>
+
+<script src="vendor/couchapp/loader.js"></script>
+<!-- <script src="debug/debug-tests.js"></script> -->
+
+<script type="text/javascript" charset="utf-8">
+
+$(document).ready(function(){
+   // Your code here
+});
+
+function show_input_zone()
+{
+	/** Ajout d'une zone de saisie **/
+	$("#input_zone").html(	"Nom Universite:"+
+				"<input name=\"host_inst\" type=\"text\"></input>" +
+				"<button name=\"new_univ_btn\">Continuer</button>");
+
+	/** Associer le boutton de validation à un comportement **/ 
+	$('button[name="new_univ_btn"]').bind('click', function(event) {
+		var elements = document.getElementsByName("host_inst");
+		var univ = elements[0].value;
+		alert("new univ : " + univ);
+		var url = "universities/" + univ;
+		window.location.href = url;
+	} );
+}
+</script>
+
